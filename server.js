@@ -1,6 +1,8 @@
 const express = require("express");
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
+const ctable = require("console.table");
+// const connection = require("mysql2/typings/mysql/lib/Connection");
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -8,15 +10,20 @@ const app = express();
 app.use(express.urlencoded({ extended: false}));
 app.use(express.json());
 
-const db = mysql.createConnection(
+const connection = mysql.createConnection(
     {
         host: "localhost", 
         user: "root",
         password: "",
         database: "workforce_db"
     }, 
-    console.log("connected to workforce_db database.")
-)
+);
+connection.connect(async (err) => {
+    if (err) throw err;
+    console.log("connected to workforce_db database.");
+    questions()
+})
+
 
 const questions = async () => {
     const answer = await inquirer.prompt([{
@@ -35,7 +42,6 @@ const questions = async () => {
     }])
     switch (answer.options) {
     case "View all departments":
-        console.log("er")
         viewDepts();
         break;
     case "View all employee roles":
@@ -59,10 +65,13 @@ const questions = async () => {
     }
 }
 
-questions()
-
 const viewDepts = () => {
-    console.log("test")
+    const query ="SELECT * FROM departments";
+    connection.query(query, (err, departments) => {
+        if (err) throw err;
+        console.table(departments);
+        questions();
+    })
 }
 
 const viewRoles = () => {
