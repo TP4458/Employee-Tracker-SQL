@@ -1,5 +1,5 @@
 const express = require("express");
-const { default: inquirer } = require("inquirer");
+const inquirer = require("inquirer");
 const mysql = require("mysql2");
 
 const PORT = process.env.PORT || 3001;
@@ -31,14 +31,38 @@ const questions = async () => {
             "Add a new role",
             "Add a new employee",
             "Update an employee role"
-        ],
+        ]
     }])
+    switch (answer.options) {
+    case "View all departments":
+        console.log("er")
+        viewDepts();
+        break;
+    case "View all employee roles":
+        viewRoles();
+        break;
+    case "View all employees":
+        viewEmpl();
+        break;
+    case "Add a new department":
+        addDept();
+        break;
+    case "Add a new role":
+        addRole();
+        break;
+    case "Add a new employee":
+        addEmpl();
+        break;
+    case "Update an employee role":
+        updateEmpl();
+        break;
+    }
 }
 
-
+questions()
 
 const viewDepts = () => {
-
+    console.log("test")
 }
 
 const viewRoles = () => {
@@ -59,4 +83,8 @@ const addRole = () => {
 
 const addEmpl = () => {
     
+}
+
+const updateEmpl = () => {
+
 }
