@@ -18,6 +18,7 @@ const connection = mysql.createConnection(
         database: "workforce_db"
     }, 
 );
+
 connection.connect(async (err) => {
     if (err) throw err;
     console.log("connected to workforce_db database.");
@@ -82,7 +83,7 @@ const empChoice = async () => {
 
 }
 
-const viewDepts = () => {
+const viewDepts =  () => {
     const query ="SELECT * FROM departments";
     connection.query(query, (err, departments) => {
         if (err) throw err;
@@ -91,16 +92,15 @@ const viewDepts = () => {
     })
 }
 
-const viewRoles = () => {
+const viewRoles =  () => {
     const query ="SELECT * FROM roles";
-    connection.query(query, (err, roles) => {
-        if (err) throw err;
+    connection.promise().query(query)
         console.table(roles);
         questions();
-    })
-}
+    }
 
-const viewEmpl = () => {
+
+const viewEmpl =  () => {
     const query ="SELECT * FROM employees";
     connection.query(query, (err, employees) => {
         if (err) throw err;
@@ -109,10 +109,23 @@ const viewEmpl = () => {
     })
 }
 
-const addDept = () => {
-    
-}
-
+const addDept = async () => {
+    try {
+      const answer = await inquirer.prompt([
+        {
+          type: 'input',
+          name: "name",
+          message: "New department name:"
+        }
+      ]);
+      connection.query("INSERT INTO departments(name) VALUES(?)", answer.name);
+      console.log(`New department added: ${answer.name}`);
+      questions();
+    } catch (err) {
+      console.log(err);
+      connection.end();
+    }
+  };
 const addRole = () => {
     
 }
