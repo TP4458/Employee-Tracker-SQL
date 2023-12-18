@@ -16,7 +16,7 @@ const connection = mysql.createConnection(
         user: "root",
         password: "",
         database: "workforce_db"
-    }, 
+    }
 );
 
 connection.connect(async (err) => {
@@ -66,22 +66,23 @@ const questions = async () => {
     }
 }
 
-const roleChoice = async () => {
-    const roleQuery = "SELECT id AS value,title FROM roles;";
-    const roles = await connection.query(roleQuery);
-    return roles[0];
-}
-const deptChoice = async () => {
-    const deptQuery = "SELECT id AS value, name FROM departments;";
-    const depts = await connection.query(deptQuery);
-    return depts[0];
-}
-const empChoice = async () => {
-    const empQuery = "SELECT id AS value, first_name, last_name FROM employees;";
-    const emps = await connection.query(empQuery);
-    return emps [0];
+// const roleChoice = async () => {
+//     const roleQuery = "SELECT id AS value,title FROM roles;";
+//     const roles = await connection.query(roleQuery);
+//     return roles[0];
+// }
+// const deptChoice = async () => {
+//     connection.query(" SELECT * FROM DE")
+//     // const deptQuery = "SELECT id AS value, name FROM departments;";
+//     // const depts = await connection.promise().query(deptQuery);
+//     // return depts[0];
+// }
+// const empChoice = async () => {
+//     const empQuery = "SELECT id AS value, first_name, last_name FROM employees;";
+//     const emps = await connection.query(empQuery);
+//     return emps [0];
 
-}
+// }
 
 const viewDepts =  () => {
     const query ="SELECT * FROM departments";
@@ -113,22 +114,73 @@ const addDept = async () => {
     try {
       const answer = await inquirer.prompt([
         {
-          type: 'input',
+          type: "input",
           name: "name",
           message: "New department name:"
         }
       ]);
-      connection.query("INSERT INTO departments(name) VALUES(?)", answer.name);
-      console.log(`New department added: ${answer.name}`);
+      connection.query("INSERT INTO departments (name) VALUES (?)", answer.name);
+      console.log("New department added: ${answer.name}");
       questions();
     } catch (err) {
       console.log(err);
       connection.end();
     }
   };
-const addRole = () => {
-    
+
+const addRole = async () => {
+    connection.query("SELECT * FROM departments", (err, department) => {
+        if (err) throw new Error(err);
+        department = department.map((departments) => {
+            return {
+                name: departments.name,
+                value: departments.id
+            };
+        })
+        inquirer.prompt ([
+            {
+                type: "input",
+                name: "title",
+                message: "Job title for this role:"
+            },
+            {
+                type: "input",
+                name: "number",
+                message: "Salary for this role:"
+            },
+            {
+                type: "list",
+                name: "department",
+                message: "choose department for the role:",
+                choices: department
+            }
+        ])
+    })
 }
+
+    //     const answer = await inquirer.prompt([
+    //         {
+    //             type: "input",
+    //             name: "title",
+    //             message: "Job title for this role:"
+    //         },
+    //         {
+    //             type: "input",
+    //             name: "number",
+    //             message: "Salary for this role:"
+    //         },
+    //         {
+    //             type: "list",
+    //             name: "dept",
+    //             message: "Choose the department:",
+    //             choices: await deptChoice(),
+    //             when(answers) {
+    //                 return answers.task === "view department"
+    //             }
+    //         },
+    //     ])
+    // // }
+// }
 
 const addEmpl = () => {
     
