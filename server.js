@@ -66,29 +66,6 @@ const questions = () => {
         break;
     }
     })
-    // switch (answer.options) {
-    // case "View all departments":
-    //     viewDepts();
-    //     break;
-    // case "View all employee roles":
-    //     viewRoles();
-    //     break;
-    // case "View all employees":
-    //     viewEmpl();
-    //     break;
-    // case "Add a new department":
-    //     addDept();
-    //     break;
-    // case "Add a new role":
-    //     addRole();
-    //     break;
-    // case "Add a new employee":
-    //     addEmployee();
-    //     break;
-    // case "Update an employee role":
-    //     updateEmpl();
-    //     break;
-    // }
 }
 
 
@@ -138,74 +115,29 @@ const addDept = async () => {
     }
   };
 
-// const addRole = async () => {
-//     connection.promise().query("SELECT * FROM departments", (err, answer) => {
-//         if (err) throw err ;
-//         let deptsArray = []
-//         answer.foreach((departments) => {deptsArray.push(departments.name);
-//         });
-//         inquirer.prompt([
-
-//             {
-//                 name: 'role',
-//                 type: 'input',
-//                 message: 'Enter title for the new role:',
-//               },
-//               {
-//                 name: 'salary',
-//                 type: 'input',
-//                 message: 'Enter the salary of this new role:',
-//               },
-//               {
-//                 name: "deptIName",
-//                 type: "list",
-//                 message: "Choose the department for this role:",
-//                 choices: deptsArray
-//             }
-
-//         ])
-//         .then((data) => {
-//             let newRole = data.newRole;
-//             let deptId;
-
-//             response.forEach((departments) => {
-//               if (data.deptName === departments.name) {deptId = departments.id;}
-//             });
-
-//             // let sql =   `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
-//             // let crit = [createdRole, answer.salary, departmentId];
-
-//             connection.promise().query(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`, [newRole, data.salary, departmentId], (error) => {
-//               if (error) throw error;
-
-//               console.log(`New role added.`);
-//               questions();
-//             });
-//       })
-        
-//     })
-
-// }
-
 addRole = () => {
-    connection.query(`SELECT * FROM departments;`, (err, res) => {
+    connection.query(`SELECT * FROM departments;`, (err, data) => {
         if (err) throw err;
-        let department = res.map(departments => ({name: departments.name, value: departments.id }));
+        let department = data.map(departments => ({
+              name: departments.name,
+              value: departments.id
+            }
+        ));
         inquirer.prompt([
             {
             name: 'title',
             type: 'input',
-            message: 'What is the name of the role you want to add?'   
+            message: 'New role name:'   
             },
             {
             name: 'salary',
             type: 'input',
-            message: 'What is the salary of the role you want to add?'   
+            message: 'Enter the salary for new role:'   
             },
             {
             name: 'deptName',
             type: 'rawlist',
-            message: 'Which department do you want to add the new role to?',
+            message: 'Select the department for the new role:',
             choices: department
             },
         ]).then((response) => {
@@ -217,14 +149,71 @@ addRole = () => {
             },
             (err) => {
                 if (err) throw err;
-                console.log(`${response.title} successfully added to database!`);
+                console.log(`${response.title} has been added to the database!`);
                 questions();
             })
         })
     })
 };
 
-const addEmpl = () => {
+const addEmployee = () => {
+    connection.query("SELECT * FROM roles", (err, data) => {
+        if (err) throw err;
+        let role = data.map(roles => (
+            {
+                name: roles.title, 
+                value: roles.id
+            }
+        ));
+        connection.query("SELECT * FROM employees", (err, data) => {
+            if (err) throw err;
+            let managers = data.map(employees => (
+                {
+                    name: employees.first_name + " " + employees.last_name,
+                    value: employees.id
+                }
+            ));
+            inquirer.prompt([
+                {
+                    name: "firstName",
+                    type: "input",
+                    message: "Enter new employee\'s first name:"
+                },
+                {
+                    name: "lastName",
+                    type: "input",
+                    message: "Enter new employee\'s last name:"
+                },
+                {
+                    name: "role",
+                    type: "rawlist",
+                    message: "Select the new employee\'s role:",
+                    choices: role
+                },
+                {
+                    name: "manager",
+                    type: "rawlist",
+                    message: "Select a manager for the new employee:",
+                    choices: managers
+                }
+            ])
+            .then ((answer) => {
+                connection.query("INSERT INTO employees SET ?",
+                {
+                    first_name: answer.firstName,
+                    last_name: answer.lastName,
+                    role_id: answer.role,
+                    manager_id: answer.manager
+                },
+                (err) => {
+                    if (err) throw err;
+                    console.log(`${answer.firstName} ${answer.lastName} has been added to the database.`)
+                    questions()
+                })
+                
+            })
+        })
+    })
     
 }
 
