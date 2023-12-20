@@ -27,54 +27,146 @@ connection.connect( (err) => {
 
 
 const questions = () => {
+    try{
         inquirer.prompt([{
         type: "list", 
         name: "options",
         message: "select your option:",
         choices: [
-            "View all departments",
-            "View all employee roles",
-            "View all employees",
-            "Add a new department",
-            "Add a new role",
-            "Add a new employee",
-            "Update employee\'s data:"
+            "View data",
+            "Add new data",
+            "Update employee\'s data:",
+            "<EXIT>"
         ]
     }])
     .then((answers) => {
         switch (answers.options) {
-    case "View all departments":
-        viewDepts();
+    case "View data":
+        viewData();
         break;
-    case "View all employee roles":
-        viewRoles();
-        break;
-    case "View all employees":
-        viewEmpl();
-        break;
-    case "Add a new department":
-        addDept();
-        break;
-    case "Add a new role":
-        addRole();
-        break;
-    case "Add a new employee":
-        addEmployee();
+    case "Add new data":
+        addData();
         break;
     case "Update employee\'s data:":
         updateEmpl();
         break;
+    case "<EXIT>":
+        connection.end();
+        break;
     }
     })
+    }  catch (err) {
+       console.log(err);
+  }
 }
 
+const viewData = () => {
+    try{
+        inquirer.prompt([{
+            type: "list",
+            name: "options",
+            message: "Select which data to view:",
+            choices: [
+                "View all departments",
+                "View all employee roles",
+                "View all employees",
+                "<-Back"
+            ]
+        }])
+        .then((answers) => {
+            switch (answers.options) {
+                case "View all departments":
+                    viewDepts();
+                    break;
+                case "View all employee roles":
+                    viewRoles();
+                    break;
+                case "View all employees":
+                    viewEmpl();
+                    break;
+                case "<-Back":
+                    questions();
+                    break; 
+            }
+        }) 
+    }   catch (err) {
+        console.log(err);
+      }
+}
+const addData = () => {
+    try{
+        inquirer.prompt([{
+            type: "list",
+            name: "options",
+            message: "Select which data to add:",
+            choices: [
+                "Add a new department",
+                "Add a new employee roles",
+                "Add a new employee",
+                "<-Back"
+            ]
+        }])
+        .then((answers) => {
+            switch (answers.options) {
+                case "Add a new department":
+                    addDept();
+                    break;
+                case "Add a new employee roles":
+                    addRole();
+                    break;
+                case "Add a new employee":
+                    addEmployee();
+                    break; 
+                case "<-Back":
+                    questions();
+                    break;
+            }
+        }) 
+    }   catch (err) {
+        console.log(err);
+      }
+}
+
+const updateEmpl = () => {
+    try {
+        inquirer.prompt([{
+            type: "list", 
+            name: "options",
+            message: "select your option:",
+            choices: [
+                "Change employee\'s name",
+                "Change employee\'s role",
+                "Change employee\'s manager",
+                "<-Back"
+            ]
+        }])
+            .then((answers) => {
+                switch (answers.options) {
+            case "Change employee\'s name":
+                updateEmplName();
+                break;
+            case "Change employee\'s role":
+                updateEmplRole();
+                break;
+            case "Change employee\'s manager":
+                updateEmplManager();
+                break;
+            case "<-Back":
+                questions();
+                break;
+            }
+            })       
+    }   catch (err) {
+        console.log(err);
+      }
+}
 
 const viewDepts =  () => {
     const query ="SELECT * FROM departments";
     connection.query(query, (err, departments) => {
         if (err) throw err;
         console.table(departments);
-        questions();
+        viewData();
     })
 }
 
@@ -83,7 +175,7 @@ const viewRoles =  () => {
     connection.query(query, (err, roles) => {
     connection.promise().query(query)
         console.table(roles);
-        questions();
+        viewData();
     })
 }
 
@@ -93,7 +185,7 @@ const viewEmpl =  () => {
     connection.query(query, (err, employees) => {
         if (err) throw err;
         console.table(employees);
-        questions();
+        viewData();
     })
 }
 
@@ -108,14 +200,14 @@ const addDept = async () => {
       ]);
       connection.query("INSERT INTO departments (name) VALUES (?)", answer.name);
       console.log("New department added: ${answer.name}");
-      questions();
+      addData();
     } catch (err) {
       console.log(err);
       connection.end();
     }
   };
 
-addRole = () => {
+const addRole = () => {
     connection.query(`SELECT * FROM departments;`, (err, data) => {
         if (err) throw err;
         let department = data.map(departments => ({
@@ -150,7 +242,7 @@ addRole = () => {
             (err) => {
                 if (err) throw err;
                 console.log(`${response.title} has been added to the database!`);
-                questions();
+                addData();
             })
         })
     })
@@ -208,49 +300,15 @@ const addEmployee = () => {
                 (err) => {
                     if (err) throw err;
                     console.log(`${answer.firstName} ${answer.lastName} has been added to the database.`)
-                    questions()
+                    addData()
                 })
                 
             })
         })
     })
-    
 }
 
-const updateEmpl = () => {
-    try {
-        inquirer.prompt([{
-            type: "list", 
-            name: "options",
-            message: "select your option:",
-            choices: [
-                "Change employee\'s name",
-                "Change employee\'s role",
-                "Change employee\'s manager",
-                "<-Back"
-            ]
-        }])
-            .then((answers) => {
-                switch (answers.options) {
-            case "Change employee\'s name":
-                updateEmplName();
-                break;
-            case "Change employee\'s role":
-                updateEmplRole();
-                break;
-            case "Change employee\'s manager":
-                updateEmplManager();
-                break;
-            case "<-Back":
-                questions();
-                break;
-            }
-            })
-        
-    } catch (err) {
-        console.log(err);
-      }
-}
+
 
 const updateEmplManager = () => {
     connection.query("SELECT * FROM employees", (err, data) => {
@@ -377,7 +435,6 @@ const updateEmplName = () => {
         .then((answer) => {
             connection.query("UPDATE employees SET ?,? WHERE ?",
             [
-
                 {
                     first_name: answer.firstName
                 },
