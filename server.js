@@ -348,5 +348,52 @@ const updateEmplRole = () => {
     
 }
 const updateEmplName = () => {
+    connection.query("SELECT * FROM employees", (err, data) => {
+        if (err) throw err;
+        let employee = data.map(employees => (
+            {
+                name: employees.first_name + " " + employees.last_name,
+                value: employees.id
+            }
+        ));
+        inquirer.prompt([
+            {
+                name: "employee",
+                type: "rawlist",
+                message: "Select an employee to update the name for:",
+                choices: employee
+            },
+            {
+                name: "firstName",
+                type: "input",
+                message: "Enter employee\'s first name:"
+            },
+            {
+                name: "lastName",
+                type: "input",
+                message: "Enter employee\'s last name:"
+            }
+        ])
+        .then((answer) => {
+            connection.query("UPDATE employees SET ?,? WHERE ?",
+            [
 
+                {
+                    first_name: answer.firstName
+                },
+                {
+                    last_name: answer.lastName
+                },
+                {
+                    id: answer.employee
+                }
+            ],
+                (err) => {
+                if (err) throw err;
+                console.log(`Data for ${answer.firstName} ${answer.lastName} has been succesfully updated.`)
+                updateEmpl()
+        })
+        }) 
+    }
+    )
 }
