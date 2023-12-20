@@ -38,7 +38,7 @@ const questions = () => {
             "Add a new department",
             "Add a new role",
             "Add a new employee",
-            "Update an employee role"
+            "Update employee\'s data:"
         ]
     }])
     .then((answers) => {
@@ -61,7 +61,7 @@ const questions = () => {
     case "Add a new employee":
         addEmployee();
         break;
-    case "Update an employee role":
+    case "Update employee\'s data:":
         updateEmpl();
         break;
     }
@@ -218,5 +218,82 @@ const addEmployee = () => {
 }
 
 const updateEmpl = () => {
+    try {
+        inquirer.prompt([{
+            type: "list", 
+            name: "options",
+            message: "select your option:",
+            choices: [
+                "Change employee\'s name",
+                "Change employee\'s role",
+                "Change employee\'s manager",
+            ]
+        }])
+            .then((answers) => {
+                switch (answers.options) {
+            case "Change employee\'s name":
+                updateEmplName();
+                break;
+            case "Change employee\'s role":
+                updateEmplRole();
+                break;
+            case "Change employee\'s manager":
+                updateEmplManager();
+                break;
+            }
+            })
+        
+    } catch (err) {
+        console.log(err);
+      }
+}
 
+const updateEmplManager = () => {
+    connection.query("SELECT * FROM employees", (err, data) => {
+        if (err) throw err;
+        let employee = data.map(employees => (
+            {
+                name: employees.first_name + " " + employees.last_name,
+                value: employees.id
+            }
+        ));
+        inquirer.prompt([
+            {
+                name: "employee",
+                type: "rawlist",
+                message: "Select an employee to update:",
+                choices: employee
+            },
+            {
+                name: "manager",
+                type: "rawlist",
+                message: "Select a new manager for this employee:",
+                choices: employee
+            }
+        ])
+        .then((answer) => {
+            connection.query("UPDATE employees SET ? WHERE ?",
+            [
+                {
+                    manager_id: answer.manager
+                },
+                {
+                    id: answer.employee
+                }
+            ],
+                (err) => {
+                if (err) throw err;
+                console.log(`${answer.firstName} ${answer.lastName} has been added to the database.`)
+                questions()
+        })
+        }) 
+    }
+    )
+}
+
+const updateEmplRole = () => {
+    console.log("updateEmplMRole")
+}
+const updateEmplName = () => {
+    console.log("updateEmplnamer")
 }
