@@ -227,6 +227,7 @@ const updateEmpl = () => {
                 "Change employee\'s name",
                 "Change employee\'s role",
                 "Change employee\'s manager",
+                "<-Back"
             ]
         }])
             .then((answers) => {
@@ -239,6 +240,9 @@ const updateEmpl = () => {
                 break;
             case "Change employee\'s manager":
                 updateEmplManager();
+                break;
+            case "<-Back":
+                questions();
                 break;
             }
             })
@@ -261,7 +265,7 @@ const updateEmplManager = () => {
             {
                 name: "employee",
                 type: "rawlist",
-                message: "Select an employee to update:",
+                message: "Select an employee to update the manager for:",
                 choices: employee
             },
             {
@@ -292,8 +296,57 @@ const updateEmplManager = () => {
 }
 
 const updateEmplRole = () => {
-    console.log("updateEmplMRole")
+    connection.query("SELECT * FROM roles", (err, data) => {
+        if (err) throw err;
+        let role = data.map(roles => (
+            {
+                name: roles.title, 
+                value: roles.id
+            }
+        ));
+        connection.query("SELECT * FROM employees", (err, data) => {
+            if (err) throw err;
+            let employee = data.map(employees => (
+                {
+                    name: employees.first_name + " " + employees.last_name,
+                    value: employees.id
+                }
+            ));
+            inquirer.prompt([
+                {
+                    name: "employee",
+                    type: "rawlist",
+                    message: "Select an employee to update the role for:",
+                    choices: employee
+                },
+                {
+                    name: "role",
+                    type: "rawlist",
+                    message: "Select a new role for this employee:",
+                    choices: role                
+                }
+            ])
+            .then ((answer) => {
+                connection.query("UPDATE employees SET ? WHERE ?",
+                [
+                    {
+                        role_id: answer.role
+                    },
+                    {
+                        id: answer.employee
+                    }
+                ],
+                (err) => {
+                    if (err) throw err;
+                    console.log(`Employee\'s role succesfuly updated to ${answer.role}.`)
+                    updateEmpl();
+                }
+                )
+            })
+          })
+    })
+    
 }
 const updateEmplName = () => {
-    console.log("updateEmplnamer")
+
 }
