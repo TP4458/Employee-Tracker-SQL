@@ -1,7 +1,7 @@
 const express = require("express");
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
-const ctable = require("console.table");
+require("console.table");
 // const connection = require("mysql2/typings/mysql/lib/Connection");
 
 const PORT = process.env.PORT || 3001;
@@ -190,6 +190,7 @@ const viewEmpl =  () => {
 }
 
 const addDept = async () => {
+    // connection.query
     try {
       const answer = await inquirer.prompt([
         {
@@ -199,7 +200,7 @@ const addDept = async () => {
         }
       ]);
       connection.query("INSERT INTO departments (name) VALUES (?)", answer.name);
-      console.log("New department added: ${answer.name}");
+      console.log(`New department added: ${answer.name}`);
       addData();
     } catch (err) {
       console.log(err);
@@ -208,7 +209,7 @@ const addDept = async () => {
   };
 
 const addRole = () => {
-    connection.query(`SELECT * FROM departments;`, (err, data) => {
+    connection.query("SELECT * FROM departments;", (err, data) => {
         if (err) throw err;
         let department = data.map(departments => ({
               name: departments.name,
